@@ -111,7 +111,7 @@ Create `deploy.sh` on your local machine:
 ```bash
 #!/bin/bash
 
-LOCAL_DIR="~/sitename/"
+LOCAL_DIR="$(pwd)/"
 REMOTE_USER="ec2-user"
 REMOTE_HOST="your-instance-ip"
 REMOTE_DIR="/var/www/html"
