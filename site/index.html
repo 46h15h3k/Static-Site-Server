@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>static-site-server — served by nginx on EC2</title>
+  <meta name="description" content="A minimal static site, deployed by rsync, served by nginx, running on a self-managed EC2 box." />
+  <link rel="icon" href="images/server-icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="nav">
+    <div class="brand">
+      <img src="images/server-icon.svg" alt="" width="26" height="26" />
+      svc://static-site
+    </div>
+    <div class="status-pill">
+      <span class="dot" aria-hidden="true"></span>
+      nginx · reachable
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="hero">
+      <p class="eyebrow">roadmap.sh · devops project 01</p>
+      <h1>A static site, hand-wired to a Linux box you control.</h1>
+      <p class="lede">
+        No platform, no build service, no magic. Just an EC2 instance, an nginx config
+        written by hand, and a shell script that rsyncs these three files to it whenever
+        something changes.
+      </p>
+      <div class="stack">
+        <span class="chip">Ubuntu 24.04</span>
+        <span class="chip">nginx</span>
+        <span class="chip">rsync over SSH</span>
+        <span class="chip">bash</span>
+        <span class="chip">EC2 / free tier</span>
+      </div>
+    </section>
+
+    <section class="schematic">
+      <h2>Deploy path</h2>
+      <div class="diagram">
+        <svg viewBox="0 0 860 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing files moving from a local machine through rsync over SSH to an EC2 instance, then served by nginx to a browser">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#4fd1a5"/>
+            </marker>
+          </defs>
+
+          <!-- nodes -->
+          <g font-family="IBM Plex Mono, monospace" font-size="12" fill="#eaf2f5">
+            <rect x="10" y="60" width="130" height="60" rx="3" fill="#123b54" stroke="#1c4a66"/>
+            <text x="75" y="86" text-anchor="middle" fill="#9fb8c6" font-size="10">LOCAL</text>
+            <text x="75" y="104" text-anchor="middle">./site/</text>
+
+            <rect x="270" y="60" width="140" height="60" rx="3" fill="#123b54" stroke="#1c4a66"/>
+            <text x="340" y="86" text-anchor="middle" fill="#9fb8c6" font-size="10">DEPLOY.SH</text>
+            <text x="340" y="104" text-anchor="middle">rsync -avz</text>
+
+            <rect x="540" y="60" width="150" height="60" rx="3" fill="#123b54" stroke="#1c4a66"/>
+            <text x="615" y="80" text-anchor="middle" fill="#9fb8c6" font-size="10">EC2 INSTANCE</text>
+            <text x="615" y="98" text-anchor="middle">/var/www/site</text>
+            <text x="615" y="113" text-anchor="middle" fill="#f2a65a" font-size="10">nginx :80</text>
+
+            <rect x="750" y="60" width="100" height="60" rx="3" fill="#123b54" stroke="#1c4a66"/>
+            <text x="800" y="86" text-anchor="middle" fill="#9fb8c6" font-size="10">BROWSER</text>
+            <text x="800" y="104" text-anchor="middle">GET /</text>
+          </g>
+
+          <!-- connectors -->
+          <line x1="140" y1="90" x2="265" y2="90" stroke="#4fd1a5" stroke-width="1.4" marker-end="url(#arrow)"/>
+          <line x1="410" y1="90" x2="535" y2="90" stroke="#4fd1a5" stroke-width="1.4" marker-end="url(#arrow)"/>
+          <line x1="690" y1="90" x2="745" y2="90" stroke="#4fd1a5" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+          <text x="202" y="55" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9fb8c6">SSH · 22</text>
+          <text x="472" y="55" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9fb8c6">1x, on change</text>
+          <text x="717" y="55" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9fb8c6">HTTP · 80</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="steps">
+      <h2>How this gets built</h2>
+
+      <div class="step">
+        <div class="num">01</div>
+        <div>
+          <h3>Reach the box over SSH</h3>
+          <p>Launch a small EC2 instance, open ports 22 and 80 in its security group, and connect with a key pair — <code>ssh -i key.pem ubuntu@&lt;ip&gt;</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">02</div>
+        <div>
+          <h3>Install and point nginx at this folder</h3>
+          <p>Install nginx, drop a server block in <code>/etc/nginx/sites-available/</code> pointing <code>root</code> at <code>/var/www/site</code>, then <code>nginx -t</code> and reload.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">03</div>
+        <div>
+          <h3>Push changes with rsync</h3>
+          <p>Run <code>./deploy.sh</code> — it rsyncs this folder to the server over SSH, only transferring what's changed.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="wrap">
+    <div class="readout">
+      <div class="field">served by<span>nginx</span></div>
+      <div class="field">host<span>EC2 · t3.micro</span></div>
+      <div class="field">deployed via<span>rsync + SSH</span></div>
+      <div class="field">source<span>3 files, 0 dependencies</span></div>
+    </div>
+    <p class="credit">Built as part of the roadmap.sh DevOps track — see the repo's README for the full setup and deploy.sh.</p>
+  </footer>
+
+</body>
+</html>
